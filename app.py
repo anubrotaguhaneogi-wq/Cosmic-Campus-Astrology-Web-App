@@ -153,3 +153,47 @@ if st.button("🚀 গণনা করুন"):
 
     except Exception as e:
         st.error(f"গণনায় ত্রুটি দেখা দিয়েছে: {e}")
+        # স্বাস্থ্য টিপস
+        st.info(f"💡 **স্বাস্থ্য টিপস ({blood_group} গ্রুপ ও {nak['nakshatra_bn']} নক্ষত্র অনুযায়ী):** নিয়মিত প্রাণায়াম, হালকা ব্যায়াম ও পর্যাপ্ত ঘুম রাখলে শরীরের শক্তি ভালো থাকবে।")
+
+    except Exception as e:
+        st.error(f"গণনায় ত্রুটি দেখা দিয়েছে: {e}")
+
+# ==========================================
+# এখানে থেকে চ্যাট বা প্রশ্ন করার সিস্টেম শুরু
+# ==========================================
+
+st.markdown("---")
+st.subheader("💬 জ্যোতিষ বা অন্যান্য বিষয়ে প্রশ্ন করুন")
+
+# চ্যাট হিস্ট্রি সেভ রাখার জন্য
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# আগের চ্যাটগুলো স্ক্রিনে দেখানোর জন্য
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# নিচে প্রশ্ন লেখার চ্যাট ইনপুট বক্স
+if user_prompt := st.chat_input("আপনার প্রশ্ন এখানে লিখুন (যেমন: আমার আজকের দিনটি কেমন যাবে?)"):
+    # ইউজারের মেসেজ স্ক্রিনে দেখানো এবং সেভ করা
+    st.session_state.messages.append({"role": "user", "content": user_prompt})
+    with st.chat_message("user"):
+        st.markdown(user_prompt)
+
+    # এআই-এর অটোমেটিক উত্তর জেনারেট করা
+    with st.chat_message("assistant"):
+        with st.spinner("উত্তর তৈরি হচ্ছে..."):
+            # এখানে আপনার নক্ষত্র ও নাম ব্যবহার করে ডেমো বা এআই উত্তর তৈরি হচ্ছে
+            nakshatra_name = nak['nakshatra_bn'] if 'nak' in locals() and 'nakshatra_bn' in nak else "আপনার"
+            user_name = name if 'name' in locals() else "গ্রাহক"
+            
+            ai_reply = (
+                f"নমস্কার {user_name}! আপনার **{nakshatra_name}** নক্ষত্র এবং "
+                f"আপনার করা প্রশ্ন ('{user_prompt}') বিশ্লেষণ করে বলছি— বর্তমান সময়টি আপনার জন্য ইতিবাচক। "
+                f"ধৈর্য ও সঠিক কর্মপ্রচেষ্টা চালিয়ে যান, সাফল্য আসবে।"
+            )
+            st.markdown(ai_reply)
+            st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+            
