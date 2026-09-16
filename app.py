@@ -255,14 +255,22 @@ tz_offset = st.number_input("টাইমজোন অফসেট (IST = 5.5)",
 if st.button("🚀 সম্পূর্ণ কুণ্ডলী গণনা করুন", type="primary"):
     try:
         day, month, year = map(int, dob.split("-"))
-        time_part = time_str.upper().replace(" ", "")
-        is_pm = "PM" in time_part
-        is_am = "AM" in time_part
-        time_part = time_part.replace("AM", "").replace("PM", "")
-        hour, minute = map(int, time_part.split(":"))
-        if is_pm and hour != 12:
-            hour += 12
-        if is_am and hour == 12:
+
+time_part = time_str.upper().replace(" ", "").replace(".", ":")
+
+is_pm = "PM" in time_part
+is_am = "AM" in time_part
+
+time_part = time_part.replace("AM", "").replace("PM", "")
+
+parts = time_part.split(":")
+hour = int(parts[0])
+minute = int(parts[1]) if len(parts) > 1 else 0
+
+if is_pm and hour != 12:
+    hour += 12
+elif is_am and hour == 12:
+    hour = 0
             hour = 0
 
         engine = VedicAstrologyEngine()
