@@ -564,7 +564,10 @@ if user_prompt := st.chat_input("আপনার প্রশ্ন এখান
 
   with st.chat_message("assistant"):
     with st.spinner("উত্তর তৈরি করা হচ্ছে..."):
-      reply = generate_reply(user_prompt, chart, user_name, gender)
+      reply = generate_reply(
+    user_prompt, chart, user_name, gender
+      )
+        
       st.markdown(reply)
       st.session_state.messages.append({"role": "assistant", "content": reply})
         
