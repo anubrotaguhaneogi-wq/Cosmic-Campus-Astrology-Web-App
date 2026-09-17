@@ -551,7 +551,16 @@ def generate_reply(user_prompt, chart, user_name, gender):
     current_dasha = chart["current_dasha"]["lord"] if chart["current_dasha"] else "অজানা"
     char = NAKSHATRA_CHARACTER.get(moon_nak, "")
     p = chart["planets"]
- 
+ return f"""আপনার প্রশ্ন: {user_prompt}
+
+নাম: {user_name}
+লিঙ্গ: {gender}
+লগ্ন: {lagna}
+চন্দ্র নক্ষত্র: {moon_nak}
+বর্তমান দশা: {current_dasha}
+
+এই মুহূর্তে উত্তর তৈরির মূল অংশ অনুপস্থিত। তাই সাময়িকভাবে এই তথ্য দেখানো হচ্ছে।
+"""
 # ================= Chat Input & Execution =================
 user_name = st.session_state.get("user_name", "ব্যবহারকারী")
 gender = st.session_state.get("gender", "উল্লেখ নেই")
