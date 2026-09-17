@@ -2,10 +2,11 @@ import streamlit as st
 import swisseph as swe
 from datetime import datetime, date, time as dtime
 import requests
+from life_financial_module import generate_life_financial_steps
 
 # ==================== Swiss Ephemeris Setup ====================
-swe.set_ephe_path(None)  # Built-in ephemeris
-swe.set_sid_mode(swe.SIDM_LAHIRI)  # Lahiri / Chitrapaksha Ayanamsa
+swe.set_ephe_path(None)
+swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 # ==================== Constants ====================
 PLANETS = {
@@ -97,10 +98,9 @@ DASHA_YEARS = {
 DASHA_ORDER = ["কেতু", "শুক্র", "সূর্য", "চন্দ্র", "মঙ্গল", "রাহু", "বৃহস্পতি", "শনি", "বুধ"]
 
 
-# ==================== Geocoding (city name -> lat/lon/timezone) ====================
+# ==================== Geocoding ====================
 @st.cache_data(show_spinner=False)
 def geocode_city(city_name):
-    """Look up a place name and return lat, lon, display name, and UTC offset (hours)."""
     if not city_name or not city_name.strip():
         return None
     try:
@@ -131,12 +131,17 @@ def geocode_city(city_name):
             if offset_str is not None:
                 tz_offset = offset_str / 3600.0
 
-        return {"lat": round(lat, 4), "lon": round(lon, 4), "display": display, "tz_offset": tz_offset}
+        return {
+            "lat": round(lat, 4),
+            "lon": round(lon, 4),
+            "display": display,
+            "tz_offset": tz_offset
+        }
     except Exception:
         return None
 
 
-# ==================== Core Calculation Class ====================
+# ==================== Vedic Astrology Engine ====================
 class VedicAstrologyEngine:
     def __init__(self):
         self.flags = swe.FLG_SWIEPH | swe.FLG_SIDEREAL | swe.FLG_SPEED
@@ -261,8 +266,13 @@ class VedicAstrologyEngine:
             "moon_pada": planets["চন্দ্র"]["pada"]
         }
 
+
 # ==================== Page Config & Styling ====================
-st.set_page_config(page_title="কসমিক ক্যাম্পাস - গভীর জ্যোতিষ", page_icon="✨", layout="wide")
+st.set_page_config(
+    page_title="কসমিক ক্যাম্পাস - গভীর জ্যোতিষ",
+    page_icon="✨",
+    layout="wide"
+)
 
 st.markdown("""
 <style>
@@ -316,12 +326,15 @@ st.markdown("""
         border-radius: 10px;
         padding: 0.6rem 1.2rem;
     }
-    .stButton > button:hover { background: linear-gradient(135deg, #ffd873 0%, #eeb046 100%); color: #241606; }
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #ffd873 0%, #eeb046 100%);
+        color: #241606;
+    }
 
-    .cc-status-ok { color: #7ee0a8; }
-    .cc-status-bad { color: #e07e7e; }
-
-    section[data-testid="stSidebar"] { background: #0f0a1d; border-right: 1px solid #2c2145; }
+    section[data-testid="stSidebar"] {
+        background: #0f0a1d;
+        border-right: 1px solid #2c2145;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -332,13 +345,19 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ==================== Session State Init ====================
+
+# ==================== Session State ====================
 if "geo" not in st.session_state:
     st.session_state.geo = None
 if "chart" not in st.session_state:
     st.session_state.chart = None
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "life_steps" not in st.session_state:
+    st.session_state.life_steps = []
+if "life_step_index" not in st.session_state:
+    st.session_state.life_step_index = 0
+
 
 # ==================== Input Form ====================
 st.markdown('<div class="cc-card">', unsafe_allow_html=True)
@@ -380,7 +399,10 @@ with col2:
     lat = st.number_input("অক্ষাংশ (Latitude)", value=float(default_lat), format="%.4f")
     lon = st.number_input("দ্রাঘিমাংশ (Longitude)", value=float(default_lon), format="%.4f")
     tz_offset = st.number_input("টাইমজোন অফসেট (IST = 5.5)", value=float(default_tz), step=0.5)
-    blood_group = st.selectbox("রক্তের গ্রুপ (ঐচ্ছিক)", ["জানা নেই", "B+", "A+", "O+", "AB+", "B-", "A-", "O-", "AB-"])
+    blood_group = st.selectbox(
+        "রক্তের গ্রুপ (ঐচ্ছিক)",
+        ["জানা নেই", "B+", "A+", "O+", "AB+", "B-", "A-", "O-", "AB-"]
+    )
 
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -398,10 +420,12 @@ if calc_clicked:
         st.session_state.name = name
         st.session_state.blood_group = blood_group
         st.session_state.gender = gender
+        st.session_state.birth_date = birth_date
 
         st.success("✅ গণনা সফলভাবে সম্পন্ন হয়েছে! (Swiss Ephemeris + Lahiri)")
     except Exception as e:
         st.error(f"গণনায় ত্রুটি হয়েছে: {e}")
+
 
 # ==================== Results Display ====================
 chart = st.session_state.chart
@@ -441,19 +465,59 @@ if chart:
 
     if chart['current_dasha']:
         st.subheader("⏳ বিংশোত্তরী মহাদশা")
-        st.write(f"**বর্তমান মহাদশা:** {chart['current_dasha']['lord']} "
-                 f"({chart['current_dasha']['years']} বছরের মধ্যে চলমান)")
+        st.write(
+            f"**বর্তমান মহাদশা:** {chart['current_dasha']['lord']} "
+            f"({chart['current_dasha']['years']} বছরের মধ্যে চলমান)"
+        )
         with st.expander("সম্পূর্ণ মহাদশা তালিকা দেখুন"):
             for d in chart["dashas"]:
                 sj = swe.revjul(d["start_jd"])
                 ej = swe.revjul(d["end_jd"])
-                st.write(f"- **{d['lord']}**: {sj[2]:02d}-{sj[1]:02d}-{sj[0]} → {ej[2]:02d}-{ej[1]:02d}-{ej[0]} ({d['years']} বছর)")
+                st.write(
+                    f"- **{d['lord']}**: "
+                    f"{sj[2]:02d}-{sj[1]:02d}-{sj[0]} → "
+                    f"{ej[2]:02d}-{ej[1]:02d}-{ej[0]} "
+                    f"({d['years']} বছর)"
+                )
 
     bg = st.session_state.get("blood_group", "জানা নেই")
-    st.info(f"💡 **স্বাস্থ্য টিপস:** নিয়মিত প্রাণায়াম, সূর্য নমস্কার ও পর্যাপ্ত ঘুম রাখুন। "
-            f"আপনার নক্ষত্র লর্ড **{chart['planets']['চন্দ্র']['nak_lord']}** গ্রহকে শক্তিশালী রাখার চেষ্টা করুন।")
+    st.info(
+        f"💡 **স্বাস্থ্য টিপস:** নিয়মিত প্রাণায়াম, সূর্য নমস্কার ও পর্যাপ্ত ঘুম রাখুন। "
+        f"আপনার নক্ষত্র লর্ড **{chart['planets']['চন্দ্র']['nak_lord']}** গ্রহকে শক্তিশালী রাখার চেষ্টা করুন।"
+    )
 else:
     st.info("উপরে জন্ম বিবরণ পূরণ করে **কুণ্ডলী গণনা করুন** বাটনে চাপ দিন।")
+
+
+# ==================== Life Financial Module Integration ====================
+st.markdown("---")
+st.subheader("📊 জীবনচক্র ও পারিবারিক অর্থনীতি বিশ্লেষণ (বয়স ১-৬০)")
+
+if st.button("🔍 জীবনচক্র বিশ্লেষণ শুরু করুন"):
+    if chart and "birth_date" in st.session_state:
+        st.session_state.life_steps = generate_life_financial_steps(
+            name=st.session_state.get("name", "আপনি"),
+            dob=st.session_state.birth_date,
+            chart=chart
+        )
+        st.session_state.life_step_index = 0
+    else:
+        st.warning("আগে কুণ্ডলী গণনা করুন।")
+
+steps = st.session_state.life_steps
+if steps:
+    for i in range(st.session_state.life_step_index + 1):
+        with st.chat_message("assistant"):
+            st.markdown(f"**{steps[i]['title']}**")
+            st.markdown(steps[i]["content"])
+
+    if st.session_state.life_step_index < len(steps) - 1:
+        if st.button("➡️ পরবর্তী ধাপ"):
+            st.session_state.life_step_index += 1
+            st.rerun()
+    else:
+        st.success("✅ সম্পূর্ণ জীবনচক্র বিশ্লেষণ সম্পন্ন।")
+
 
 # ==================== Chat System ====================
 st.markdown("---")
@@ -466,7 +530,6 @@ for message in st.session_state.messages:
 
 
 def house_lord_note(chart, house_topic_planets):
-    """Small helper: describe rashi/nakshatra of a set of relevant planets."""
     notes = []
     for p in house_topic_planets:
         if p in chart["planets"]:
@@ -478,42 +541,14 @@ def house_lord_note(chart, house_topic_planets):
 
 def generate_reply(user_prompt, chart, user_name, gender):
     if not chart:
-        return ("প্রথমে উপরে আপনার জন্ম তথ্য দিয়ে **কুণ্ডলী গণনা** করুন। "
-                "তারপর প্রশ্ন করলে আমি আপনার চার্টের উপর ভিত্তি করে উত্তর দেব।")
+        return (
+            "প্রথমে উপরে আপনার জন্ম তথ্য দিয়ে **কুণ্ডলী গণনা** করুন। "
+            "তারপর প্রশ্ন করলে আমি আপনার চার্টের উপর ভিত্তি করে উত্তর দেব।"
+        )
 
     moon_nak = chart["moon_nakshatra"]
     lagna = chart["lagna"]["rashi_bn"]
     current_dasha = chart["current_dasha"]["lord"] if chart["current_dasha"] else "অজানা"
     char = NAKSHATRA_CHARACTER.get(moon_nak, "")
     p = chart["planets"]
-    q = user_prompt.lower()
-
-    topics = {
-        "dasha": ["দশা", "মহাদশা", "মহদশা", "বর্তমান সময়", "এখন কেমন"],
-        "marriage": ["বিয়ে", "বিবাহ", "marriage", "শাদী", "স্বামী", "স্ত্রী", "জীবনসঙ্গী"],
-        "career": ["চাকরি", "ক্যারিয়ার", "জব", "পেশা", "কাজের", "ব্যবসা", "কোম্পানি"],
-        "health": ["স্বাস্থ্য", "অসুস্থ", "রোগ", "health", "শরীর"],
-        "money": ["টাকা", "অর্থ", "ধন", "আয়", "সম্পদ", "লাভ"],
-        "education": ["পড়াশোনা", "শিক্ষা", "পরীক্ষা", "স্টাডি"],
-        "children": ["সন্তান", "বাচ্চা", "ছেলে-মেয়ে"],
-        "travel": ["ভ্রমণ", "বিদেশ", "প্রবাস", "যাত্রা"],
-        "today": ["আজ", "আজকের", "দিন কেমন"],
-        "character": ["স্বভাব", "চরিত্র", "আমি কেমন"],
-    }
-
-    def matched(key):
-        return any(w in q for w in topics[key])
-
-    parts = []
-
-    if matched("dasha"):
-        parts.append(
-            f"আপনার বর্তমান **{current_dasha} মহাদশা** চলছে। চন্দ্র নক্ষত্র **{moon_nak}**, লগ্ন **{lagna}**। "
-            f"{char} এই সময়ে ধৈর্য ধরে সঠিক কর্মপ্রচেষ্টা রাখলে ভালো ফল পাবেন।"
-        )
-
-    if matched("marriage"):
-        note = house_lord_note(chart, ["শুক্র", "বৃহস্পতি"])
-        rel_planet = "বৃহস্পতি" if gender == "মহিলা" else "শুক্র"
-        parts.append(
-            f"বিবাহের বিষয়ে: {note}। সাধারণত {rel_planet} 
+ 
