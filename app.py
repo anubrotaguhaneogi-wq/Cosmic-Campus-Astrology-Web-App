@@ -553,7 +553,8 @@ def generate_reply(user_prompt, chart, user_name, gender):
     p = chart["planets"]
  
 # ================= Chat Input & Execution =================
-
+user_name = st.session_state.get("user_name", "ব্যবহারকারী")
+gender = st.session_state.get("gender", "উল্লেখ নেই")
 if user_prompt := st.chat_input("আপনার প্রশ্ন এখানে লিখুন..."):
   if "messages" not in st.session_state:
     st.session_state.messages = []
