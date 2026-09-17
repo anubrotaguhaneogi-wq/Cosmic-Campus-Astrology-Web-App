@@ -552,3 +552,19 @@ def generate_reply(user_prompt, chart, user_name, gender):
     char = NAKSHATRA_CHARACTER.get(moon_nak, "")
     p = chart["planets"]
  
+# ================= Chat Input & Execution =================
+
+if user_prompt := st.chat_input("আপনার প্রশ্ন এখানে লিখুন..."):
+  if "messages" not in st.session_state:
+    st.session_state.messages = []
+    
+  st.session_state.messages.append({"role": "user", "content": user_prompt})
+  with st.chat_message("user"):
+    st.markdown(user_prompt)
+
+  with st.chat_message("assistant"):
+    with st.spinner("উত্তর তৈরি করা হচ্ছে..."):
+      reply = generate_reply(user_prompt, chart, user_name, gender)
+      st.markdown(reply)
+      st.session_state.messages.append({"role": "assistant", "content": reply})
+        
