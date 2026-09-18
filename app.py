@@ -1,4 +1,4 @@
-এইimport streamlit as st
+import streamlit as st
 import swisseph as swe
 from datetime import datetime, date, time as dtime
 import requests
