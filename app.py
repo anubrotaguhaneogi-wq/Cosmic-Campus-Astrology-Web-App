@@ -551,7 +551,7 @@ def generate_reply(user_prompt, chart, user_name, gender):
     current_dasha = chart["current_dasha"]["lord"] if chart["current_dasha"] else "অজানা"
     char = NAKSHATRA_CHARACTER.get(moon_nak, "")
     p = chart["planets"]
-     return f"""আপনার প্রশ্ন: {user_prompt}
+    return f"""আপনার প্রশ্ন: {user_prompt}
 
 নাম: {user_name}
 লিঙ্গ: {gender}
