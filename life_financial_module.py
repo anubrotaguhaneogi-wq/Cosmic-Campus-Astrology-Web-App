@@ -194,14 +194,6 @@ PHASE_CONTENT = {
 
 # ------------------------------------------------------------
 # কৈশোর (১২-২০) — চালচলন, গঠন ও চিন্তাধারা (লিঙ্গভিত্তিক)
-#
-# পাঠক: জ্যোতিষী/পরামর্শদাতা। সুর: সতর্কতামূলক (কী খেয়াল রাখতে হবে)।
-#
-# গুরুত্বপূর্ণ: এগুলো গড় প্রবণতা, প্রতিটি মানুষের নিয়ম নয়। তাই সব বাক্য
-# "সাধারণত / অনেকের ক্ষেত্রে / দেখা যেতে পারে" ধাঁচে এবং শেষে
-# "যাচাই করুন" প্রশ্ন আছে — ক্লায়েন্টের সাথে মিলিয়ে নিতে।
-# প্রতিটি উপ-পর্যায়ে তিনটি দিক: conduct (চালচলন), form (গঠন ও আত্মপরিচয়),
-# thinking (চিন্তাধারা), সাথে watch (কী খেয়াল রাখতে হবে)।
 # ------------------------------------------------------------
 ADOLESCENCE_SUBPHASES = [
     {"key": "early", "range": (12, 14), "label_bn": "কৈশোরের শুরু (১২–১৪)"},
@@ -306,7 +298,7 @@ ADOLESCENCE_DISCLAIMER = (
 
 def get_adolescence_profile(age: int, gender):
     """১২–২০ বছরের জন্য লিঙ্গভিত্তিক চালচলন/গঠন/চিন্তাধারা ফেরত দেয়।
-    এই সীমার বাইরে হলে None দেয় (কারণ তথ্য শুধু এই বয়সের জন্য লেখা)।"""
+    এই সীমার বাইরে হলে None দেয়।"""
     gender = normalize_gender(gender)
     for sub in ADOLESCENCE_SUBPHASES:
         lo, hi = sub["range"]
@@ -318,7 +310,7 @@ def get_adolescence_profile(age: int, gender):
     return None
 
 
-# পুরনো কোডের সাথে সামঞ্জস্য (ছেলেদের জন্য আগের LIFE_PHASES-এর মতো)
+# পুরনো কোডের সাথে সামঞ্জস্য (ছেলেদের জন্য)
 LIFE_PHASES = [
     {
         "range": sk["range"],
@@ -335,8 +327,7 @@ LIFE_PHASES = [
 # সহায়ক ফাংশন
 # ------------------------------------------------------------
 def normalize_gender(gender):
-    """বিভিন্ন লেখা (bn/en) থেকে 'female' বা 'male' বের করে।
-    চেনা না গেলে ValueError দেয় — অনুমান করে ভুল চার্ট বানানো এড়াতে।"""
+    """বিভিন্ন লেখা (bn/en) থেকে 'female' বা 'male' বের করে।"""
     if gender is None:
         raise ValueError("লিঙ্গ (gender) দেওয়া আবশ্যক: 'female' বা 'male'")
     g = str(gender).strip().lower()
@@ -366,4 +357,21 @@ def get_phase_for_age(age: int, gender=GENDER_MALE):
         "range": sk["range"],
         "planet": sk["planet"],
         "planet_en": sk["planet_en"],
-        "life_progression": c["li
+        "life_progression": c["life"],
+        "body": c["body"],
+        "money": c["money"],
+    }
+
+
+def get_full_profile(age: int, gender):
+    """বয়স ও লিঙ্গ অনুযায়ী সম্পূর্ণ প্রোফাইল ফেরত দেয় (পর্যায় + কৈশোর যদি প্রযোজ্য হয়)।"""
+    phase = get_phase_for_age(age, gender)
+    adolescence = get_adolescence_profile(age, gender)
+    
+    return {
+        "age": age,
+        "gender": gender,
+        "gender_label": GENDER_LABEL_BN[normalize_gender(gender)],
+        "phase": phase,
+        "adolescence": adolescence,
+        "adolescence_disclaimer": ADOLESCEN
