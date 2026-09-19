@@ -378,4 +378,4 @@ def get_full_profile(age: int, gender):
     }
     
     def generate_life_financial_steps(*args, **kwargs):
-    return get_full_profile(*args, **kwargs)                     
+        return get_full_profile(*args, **kwargs)                     
