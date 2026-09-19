@@ -376,6 +376,6 @@ def get_full_profile(age: int, gender):
     "adolescence": adolescence,
     "adolescence_disclaimer": ADOLESCENCE_DISCLAIMER
     }
-    
+                       
 def generate_life_financial_steps(*args, **kwargs):
-    return get_full_profile(*args, **kwargs)                     
+    return get_full_profile(*args, **kwargs)
