@@ -535,50 +535,16 @@ def house_lord_note(chart, house_topic_planets):
         if p in chart["planets"]:
             pd = chart["planets"][p]
             retro = " (বক্রী)" if pd["retrograde"] else ""
-            notes.append(f"{p} আছে {pd['rashi_bn']} রাশিতে{retro}")
+            notes.append(f"**{p}** আছে {pd['rashi_bn']} রাশিতে{retro}")
     return "; ".join(notes)
 
 
-def generate_reply(user_prompt, chart, user_name, gender):
-    if not chart:
-        return (
-            "প্রথমে উপরে আপনার জন্ম তথ্য দিয়ে **কুণ্ডলী গণনা** করুন। "
-            "তারপর প্রশ্ন করলে আমি আপনার চার্টের উপর ভিত্তি করে উত্তর দেব।"
-        )
-
-        moon_nak = chart["moon_nakshatra"]
-    lagna = chart["lagna"]["rashi_bn"]
-    current_dasha = chart["current_dasha"]["lord"] if chart["current_dasha"] else "অজানা"
-    char = NAKSHATRA_CHARACTER.get(moon_nak, "")
-    p = chart["planets"]
-
-    return f"""আপনার প্রশ্ন: {user_prompt}
-
-নাম: {user_name}
-লিঙ্গ: {gender}
-লগ্ন: {lagna}
-চন্দ্র নক্ষত্র: {moon_nak}
-বর্তমান দশা: {current_dasha}
-
-আপনার প্রশ্নের চার্টভিত্তিক বিশ্লেষণ প্রস্তুত হচ্ছে।
-"""
-# ================= Chat Input & Execution =================
-user_name = st.session_state.get("user_name", "ব্যবহারকারী")
-gender = st.session_state.get("gender", "উল্লেখ নেই")
-if user_prompt := st.chat_input("আপনার প্রশ্ন এখানে লিখুন..."):
-  if "messages" not in st.session_state:
-    st.session_state.messages = []
-    
-  st.session_state.messages.append({"role": "user", "content": user_prompt})
-  with st.chat_message("user"):
-    st.markdown(user_prompt)
-
-  with st.chat_message("assistant"):
-    with st.spinner("উত্তর তৈরি করা হচ্ছে..."):
-      reply = generate_reply(
-    user_prompt, chart, user_name, gender
-      )
-        
-      st.markdown(reply)
-      st.session_state.messages.append({"role": "assistant", "content": reply})
-        
+TOPIC_MAP = [
+    (["বিয়ে", "বিবাহ", "সম্পর্ক", "প্রেম", "স্বামী", "স্ত্রী"],
+     "💍 বিবাহ ও সম্পর্ক", ["শুক্র", "বৃহস্পতি", "মঙ্গল"],
+     "বিবাহ ও সম্পর্কের জন্য শুক্র (ভালোবাসা), বৃহস্পতি (আশীর্বাদ) ও মঙ্গলের (শক্তি) অবস্থান দেখা হয়।"),
+    (["ক্যারিয়ার", "চাকরি", "কাজ", "পেশা", "ব্যবসা"],
+     "💼 ক্যারিয়ার ও পেশা", ["শনি", "সূর্য", "বুধ"],
+     "পেশার জন্য শনি (কর্ম), সূর্য (মর্যাদা) ও বুধ (ব্যবসায়িক বুদ্ধি) দেখা হয়।"),
+    (["টাকা", "অর্থ", "ধন", "আয়", "সম্পদ", "বেতন"],
+  
