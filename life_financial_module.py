@@ -369,9 +369,12 @@ def get_full_profile(age: int, gender):
     adolescence = get_adolescence_profile(age, gender)
     
     return {
-        "age": age,
-        "gender": gender,
-        "gender_label": GENDER_LABEL_BN[normalize_gender(gender)],
-        "phase": phase,
-        "adolescence": adolescence,
-        "adolescence_disclaimer": ADOLESCEN
+    "age": age,
+    "gender": gender,
+    "gender_label": GENDER_LABEL_BN[normalize_gender(gender)],
+    "phase": phase,
+    "adolescence": adolescence,
+    "adolescence_disclaimer": ADOLESCENCE_DISCLAIMER
+    }
+    
+                         
