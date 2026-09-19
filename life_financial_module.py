@@ -367,15 +367,17 @@ def get_full_profile(age: int, gender):
     """বয়স ও লিঙ্গ অনুযায়ী সম্পূর্ণ প্রোফাইল ফেরত দেয় (পর্যায় + কৈশোর যদি প্রযোজ্য হয়)।"""
     phase = get_phase_for_age(age, gender)
     adolescence = get_adolescence_profile(age, gender)
-    
+
     return {
-    "age": age,
-    "gender": gender,
-    "gender_label": GENDER_LABEL_BN[normalize_gender(gender)],
-    "phase": phase,
-    "adolescence": adolescence,
-    "adolescence_disclaimer": ADOLESCENCE_DISCLAIMER
+        "age": age,
+        "gender": gender,
+        "gender_label": GENDER_LABEL_BN[normalize_gender(gender)],
+        "phase": phase,
+        "adolescence": adolescence,
+        "adolescence_disclaimer": ADOLESCENCE_DISCLAIMER,
     }
-                       
+
+
 def generate_life_financial_steps(*args, **kwargs):
     return get_full_profile(*args, **kwargs)
+    
