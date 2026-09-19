@@ -2,3 +2,4 @@ streamlit
 astropy
 openai
 pyswisseph
+google-generativeai
