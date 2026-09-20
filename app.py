@@ -603,8 +603,12 @@ if user_prompt := st.chat_input("আপনার প্রশ্ন এখান
         st.markdown(user_prompt)
 
     with st.spinner("আপনার প্রশ্নের চার্টভিত্তিক বিশ্লেষণ প্রস্তুত হচ্ছে..."):
-        reply = generate_reply(user_prompt, st.session_state.chart, user_name, gender)
-
+        reply = generate_reply(
+    user_prompt,
+    st.session_state.chart,
+    user_name,
+    gender
+        )
     st.session_state.messages.append({"role": "assistant", "content": reply})
     with st.chat_message("assistant"):
         st.markdown(reply)
