@@ -487,7 +487,12 @@ if chart:
     )
 else:
     st.info("উপরে জন্ম বিবরণ পূরণ করে **কুণ্ডলী গণনা করুন** বাটনে চাপ দিন।")
-
+st.session_state.life_steps = generate_life_financial_steps(
+    name=st.session_state.get("name", "আপনি"),
+    dob=st.session_state.birth_date,
+    gender=st.session_state.get("gender", "উল্লেখ নেই"),
+    chart=chart
+)
 
 # ==================== Life Financial Module Integration ====================
 st.markdown("---")
@@ -497,9 +502,7 @@ if st.button("🔍 জীবনচক্র বিশ্লেষণ শুর�
     if chart and "birth_date" in st.session_state:
         st.session_state.life_steps = generate_life_financial_steps(
             name=st.session_state.get("name", "আপনি"),
-            dob=st.session_state.birth_date,
-            chart=chart
-        )
+            
         st.session_state.life_step_index = 0
     else:
         st.warning("আগে কুণ্ডলী গণনা করুন।")
