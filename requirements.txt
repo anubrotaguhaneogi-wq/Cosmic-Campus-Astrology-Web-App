@@ -3,3 +3,4 @@ astropy
 openai
 pyswisseph
 google-generativeai
+requests
