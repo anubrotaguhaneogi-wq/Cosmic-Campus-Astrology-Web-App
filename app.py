@@ -501,10 +501,11 @@ st.subheader("📊 জীবনচক্র ও পারিবারিক অ�
 if st.button("🔍 জীবনচক্র বিশ্লেষণ শুরু করুন"):
     if chart and "birth_date" in st.session_state:
         st.session_state.life_steps = generate_life_financial_steps(
-            name=st.session_state.get("name", "আপনি"),
-            
-        st.session_state.life_step_index = 0
-    else:
+    name=st.session_state.get("name", "আপনি"),
+    dob=st.session_state.birth_date,
+    gender=st.session_state.get("gender", "উল্লেখ নেই"),
+    chart=chart
+        )
         st.warning("আগে কুণ্ডলী গণনা করুন।")
 
 steps = st.session_state.life_steps
