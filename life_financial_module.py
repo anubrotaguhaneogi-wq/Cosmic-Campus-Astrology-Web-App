@@ -377,7 +377,9 @@ def get_full_profile(age: int, gender):
         "adolescence_disclaimer": ADOLESCENCE_DISCLAIMER,
     }
 
-
-def generate_life_financial_steps(*args, **kwargs):
-    return get_full_profile(*args, **kwargs)
+def generate_life_financial_steps(name, dob, gender, chart=None):
+    from datetime import date
+    today = date.today()
+    age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+    return get_full_profile(age, gender)
     
