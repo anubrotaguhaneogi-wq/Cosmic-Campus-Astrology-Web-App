@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>রহস্য বেদা</title>
+<style>
+body{background:#000;color:#fff;font-family:sans-serif;padding:20px}
+input,select,button,textarea{
+width:100%;padding:12px;margin:8px 0;border-radius:10px;border:none
+}
+button{background:#00d26a;color:#fff;font-weight:bold}
+#chat{margin-top:20px}
+.msg{padding:12px;border-radius:10px;margin:10px 0}
+.user{background:#063}
+.bot{background:#222}
+</style>
+</head>
+<body>
+
+<h2>🔮 রহস্য বেদা</h2>
+
+<input type="date" id="dob">
+<input type="time" id="tob">
+
+<select id="city">
+<option>শিলিগুড়ি</option>
+<option>জলপাইগুড়ি</option>
+<option>কলকাতা</option>
+<option>ঢাকা</option>
+</select>
+
+<button onclick="showChart()">🔍 দেখুন</button>
+
+<div id="info"></div>
+
+<div id="chat" style="display:none">
+<textarea id="question" placeholder="প্রশ্ন লিখুন"></textarea>
+<button onclick="askAI()">পাঠান</button>
+<div id="messages"></div>
+</div>
+
+<script>
+const API_KEY="এখানে_তোমার_Gemini_API_Key";
+
+function showChart(){
+const dob=document.getElementById("dob").value;
+const tob=document.getElementById("tob").value;
+const city=document.getElementById("city").value;
+
+document.getElementById("info").innerHTML=
+`<p>📅 ${dob}</p><p>⏰ ${tob}</p><p>📍 ${city}</p>`;
+document.getElementById("chat").style.display="block";
+}
+
+async function askAI(){
+const q=document.getElementById("question").value;
+const messages=document.getElementById("messages");
+
+messages.innerHTML+=`<div class="msg user">${q}</div>`;
+
+const prompt=`বাংলায় উত্তর দাও। জন্মস্থান ${document.getElementById("city").value}, জন্ম তারিখ ${document.getElementById("dob").value}, জন্ম সময় ${document.getElementById("tob").value}। প্রশ্ন: ${q}`;
+
+try{
+const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+contents:[{parts:[{text:prompt}]}]
+})
+});
+
+const data=await res.json();
+const ans=data.candidates[0].content.parts[0].text;
+
+messages.innerHTML+=`<div class="msg bot">${ans}</div>`;
+document.getElementById("question").value="";
+}catch(e){
+messages.innerHTML+=`<div class="msg bot">⚠️ সমস্যা হয়েছে</div>`;
+}
+}
+</script>
+
+</body>
+</html>
