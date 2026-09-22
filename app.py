@@ -68,6 +68,23 @@ def calculate_chart(dob: date, tob: dtime, lat: float, lon: float, tz: float = I
 
 # ==================== AI (Gemini) ====================
 def ask_ai(question: str, chart: dict, birth_info: str) -> str:
+
+
+# ==================== UI ====================
+st.title("🔮 রহস্য বেদা")
+st.caption("জন্মতথ্য দিন, রাশি-নক্ষত্র দেখুন, তারপর প্রশ্ন করুন।")
+
+# --- ইনপুট ---
+col1, col2 = st.columns(2)
+with col1:
+    dob = st.date_input(
+        "জন্ম তারিখ",
+        value=date(2000, 1, 1),
+        min_value=date(1900, 1, 1),
+        max_value=date.today(),
+    )
+wit# ==================== AI (Gemini) ====================
+def ask_ai(question: str, chart: dict, birth_info: str) -> str:
     """জন্মছকের তথ্যসহ প্রশ্ন Gemini API-তে পাঠায়।"""
     try:
         api_key = st.secrets["GEMINI_API_KEY"]
@@ -88,9 +105,9 @@ def ask_ai(question: str, chart: dict, birth_info: str) -> str:
         + context
     )
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
     payload = {
-        "contents": [{"role": "user", "parts": [{"text": system_prompt + "\nপ্রশ্ন: " + question}]}]
+        "contents": [{"parts": [{"text": system_prompt + "\nপ্রশ্ন: " + question}]}]
     }
     try:
         r = requests.post(url, json=payload, timeout=40)
@@ -99,22 +116,7 @@ def ask_ai(question: str, chart: dict, birth_info: str) -> str:
         return data["candidates"][0]["content"]["parts"][0]["text"]
     except Exception as e:
         return f"⚠️ উত্তর আনতে সমস্যা হয়েছে: {e}"
-
-
-# ==================== UI ====================
-st.title("🔮 রহস্য বেদা")
-st.caption("জন্মতথ্য দিন, রাশি-নক্ষত্র দেখুন, তারপর প্রশ্ন করুন।")
-
-# --- ইনপুট ---
-col1, col2 = st.columns(2)
-with col1:
-    dob = st.date_input(
-        "জন্ম তারিখ",
-        value=date(2000, 1, 1),
-        min_value=date(1900, 1, 1),
-        max_value=date.today(),
-    )
-with col2:
+        h col2:
     tob = st.time_input("জন্ম সময়", value=dtime(9, 0))
 
 city = st.selectbox("জন্মস্থান", list(CITIES.keys()))
