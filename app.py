@@ -101,7 +101,40 @@ def ask_ai(question: str, chart: dict, birth_info: str) -> str:
         return f"⚠️ উত্তর আনতে সমস্যা হয়েছে: {e}"
 
 
-# ==================== UI ====================
+# ==================== AI (Gemini) ====================
+def ask_ai(question: str, chart: dict, birth_info: str) -> str:
+    """জন্মছকের তথ্যসহ প্রশ্ন Gemini API-তে পাঠায়।"""
+    try:
+        api_key = st.secrets["GEMINI_API_KEY"]
+    except Exception:
+        return "⚠️ API key পাওয়া যায়নি। Streamlit Secrets-এ GEMINI_API_KEY যোগ করুন।"
+
+    context = (
+        f"জন্মের তথ্য: {birth_info}\n"
+        f"সূর্য রাশি: {chart['sun_rashi']}\n"
+        f"চন্দ্র রাশি: {chart['moon_rashi']}\n"
+        f"লগ্ন: {chart['lagna']}\n"
+        f"নক্ষত্র: {chart['nakshatra']} (পাদ {chart['pada']})\n"
+    )
+    system_prompt = (
+        "তুমি 'রহস্য বেদা', একজন বন্ধুত্বপূর্ণ বৈদিক জ্যোতিষ সহকারী। "
+        "সবসময় সহজ বাংলায় উত্তর দাও। নিচের জন্মছকের তথ্য ব্যবহার করে ব্যবহারকারীর প্রশ্নের উত্তর দাও। "
+        "উত্তর ছোট ও পরিষ্কার রাখো। স্বাস্থ্য, আইন বা বিনিয়োগ নিয়ে নিশ্চিত ভবিষ্যদ্বাণী কোরো না।\n\n"
+        + context
+    )
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    payload = {
+        "contents": [{"role": "user", "parts": [{"text": system_prompt + "\nপ্রশ্ন: " + question}]}]
+    }
+    try:
+        r = requests.post(url, json=payload, timeout=40)
+        r.raise_for_status()
+        data = r.json()
+        return data["candidates"][0]["content"]["parts"][0]["text"]
+    except Exception as e:
+        return f"⚠️ উত্তর আনতে সমস্যা হয়েছে: {e}"
+                          
 st.title("🔮 রহস্য বেদা")
 st.caption("জন্মতথ্য দিন, রাশি-নক্ষত্র দেখুন, তারপর প্রশ্ন করুন।")
 
