@@ -88,7 +88,7 @@ def ask_ai(question: str, chart: dict, birth_info: str) -> str:
         + context
     )
 
-     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={api_key}"
     payload = {
         "contents": [{"role": "user", "parts": [{"text": system_prompt + "\nপ্রশ্ন: " + question}]}]
     }
@@ -158,4 +158,3 @@ if "chart" in st.session_state:
         st.session_state.messages.append({"role": "assistant", "content": answer})
 else:
     st.info("উপরে জন্মতথ্য দিয়ে **দেখুন** বোতাম চাপুন।")
-        
