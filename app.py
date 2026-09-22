@@ -68,28 +68,11 @@ def calculate_chart(dob: date, tob: dtime, lat: float, lon: float, tz: float = I
 
 # ==================== AI (Gemini) ====================
 def ask_ai(question: str, chart: dict, birth_info: str) -> str:
-
-
-# ==================== UI ====================
-st.title("🔮 রহস্য বেদা")
-st.caption("জন্মতথ্য দিন, রাশি-নক্ষত্র দেখুন, তারপর প্রশ্ন করুন।")
-
-# --- ইনপুট ---
-col1, col2 = st.columns(2)
-with col1:
-    dob = st.date_input(
-        "জন্ম তারিখ",
-        value=date(2000, 1, 1),
-        min_value=date(1900, 1, 1),
-        max_value=date.today(),
-    )
-wit# ==================== AI (Gemini) ====================
-def ask_ai(question: str, chart: dict, birth_info: str) -> str:
     """জন্মছকের তথ্যসহ প্রশ্ন Gemini API-তে পাঠায়।"""
     try:
         api_key = st.secrets["GEMINI_API_KEY"]
     except Exception:
-        return "⚠️ API key পাওয়া যায়নি। Streamlit Secrets-এ GEMINI_API_KEY যোগ করুন।"
+        return "⚠ API key পাওয়া যায়নি। Streamlit Secrets-এ GEMINI_API_KEY যোগ করুন।"
 
     context = (
         f"জন্মের তথ্য: {birth_info}\n"
@@ -115,8 +98,23 @@ def ask_ai(question: str, chart: dict, birth_info: str) -> str:
         data = r.json()
         return data["candidates"][0]["content"]["parts"][0]["text"]
     except Exception as e:
-        return f"⚠️ উত্তর আনতে সমস্যা হয়েছে: {e}"
-        h col2:
+        return f"⚠ উত্তর আনতে সমস্যা হয়েছে: {e}"
+
+
+# ==================== UI ====================
+st.title("🔮 রহস্য বেদা")
+st.caption("জন্মতথ্য দিন, রাশি-নক্ষত্র দেখুন, তারপর প্রশ্ন করুন।")
+
+# --- ইনপুট ---
+col1, col2 = st.columns(2)
+with col1:
+    dob = st.date_input(
+        "জন্ম তারিখ",
+        value=date(2000, 1, 1),
+        min_value=date(1900, 1, 1),
+        max_value=date.today(),
+    )
+with col2:
     tob = st.time_input("জন্ম সময়", value=dtime(9, 0))
 
 city = st.selectbox("জন্মস্থান", list(CITIES.keys()))
@@ -132,10 +130,10 @@ if "chart" in st.session_state:
     chart = st.session_state.chart
     st.subheader("আপনার বেসিক তথ্য")
     c1, c2 = st.columns(2)
-    c1.metric("☀️ সূর্য রাশি", chart["sun_rashi"])
+    c1.metric("☀ সূর্য রাশি", chart["sun_rashi"])
     c2.metric("🌙 চন্দ্র রাশি", chart["moon_rashi"])
     c3, c4 = st.columns(2)
-    c3.metric("⬆️ লগ্ন", chart["lagna"])
+    c3.metric("⬆ লগ্ন", chart["lagna"])
     c4.metric("⭐ নক্ষত্র", f"{chart['nakshatra']} (পাদ {chart['pada']})")
 
     st.divider()
@@ -160,3 +158,4 @@ if "chart" in st.session_state:
         st.session_state.messages.append({"role": "assistant", "content": answer})
 else:
     st.info("উপরে জন্মতথ্য দিয়ে **দেখুন** বোতাম চাপুন।")
+                          
