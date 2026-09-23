@@ -46,7 +46,6 @@ def calculate_chart(dob: date, tob: dtime, lat: float, lon: float, tz: float = I
     ut_hour = local_hour - tz
     jd = swe.julday(dob.year, dob.month, dob.day, ut_hour)
 
-    # প্রথমে Swiss Ephemeris চেষ্টা, না হলে Moshier
     flags = swe.FLG_SWIEPH | swe.FLG_SIDEREAL
     try:
         sun = swe.calc_ut(jd, swe.SUN, flags)[0][0]
@@ -56,7 +55,6 @@ def calculate_chart(dob: date, tob: dtime, lat: float, lon: float, tz: float = I
         sun = swe.calc_ut(jd, swe.SUN, flags)[0][0]
         moon = swe.calc_ut(jd, swe.MOON, flags)[0][0]
 
-    # লগ্ন (নিরয়ন / sidereal)
     houses, ascmc = swe.houses_ex(jd, lat, lon, b"P", swe.FLG_SIDEREAL)
     lagna = ascmc[0]
 
@@ -75,7 +73,7 @@ def calculate_chart(dob: date, tob: dtime, lat: float, lon: float, tz: float = I
 
 # ==================== AI (Groq) ====================
 def get_api_key() -> str | None:
-    """secrets বা environment থেকে API key নেয়।"""
+    """secrets বা environment থেকে API key নেয়।"""
     try:
         return st.secrets["GROQ_API_KEY"]
     except Exception:
@@ -83,13 +81,13 @@ def get_api_key() -> str | None:
 
 
 def ask_ai(question: str, chart: dict, birth_info: str) -> str:
-    """জন্মছকের তথ্যসহ প্রশ্ন Groq API-তে পাঠায়।"""
+    """জন্মছকের তথ্যসহ প্রশ্ন Groq API-তে পাঠায়।"""
     api_key = get_api_key()
     if not api_key:
         return (
             "⚠ **API key পাওয়া যায়নি।**\n\n"
             "নিচের যেকোনো একটা উপায়ে key দিন:\n"
-            "1. প্রজেক্ট ফোল্ডারে `.streamlit/secrets.toml` ফাইল বানিয়ে লিখুন:\n"
+            "1. প্রজেক্ট ফোল্ডারে `.streamlit/secrets.toml` ফাইল বানিয়ে লিখুন:\n"
             "```toml\nGROQ_API_KEY = \"gsk_আপনার_কী\"\n```\n"
             "2. অথবা টার্মিনালে: `export GROQ_API_KEY=gsk_আপনার_কী`"
         )
@@ -116,7 +114,7 @@ def ask_ai(question: str, chart: dict, birth_info: str) -> str:
         "Content-Type": "application/json",
     }
     payload = {
-        "model": "llama-3.1-8b-instant",
+        "model": "openai/gpt-oss-20b",
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": question},
@@ -140,7 +138,6 @@ def ask_ai(question: str, chart: dict, birth_info: str) -> str:
 st.title("🔮 রহস্য বেদা")
 st.caption("জন্মতথ্য দিন → রাশি-নক্ষত্র দেখুন → তারপর প্রশ্ন করুন।")
 
-# --- ইনপুট ---
 col1, col2 = st.columns(2)
 with col1:
     dob = st.date_input(
@@ -161,13 +158,12 @@ if st.button("🔍 দেখুন", use_container_width=True, type="primary"):
         st.session_state.birth_info = (
             f"{dob.strftime('%d/%m/%Y')}, {tob.strftime('%I:%M %p')}, {city}"
         )
-        st.session_state.messages = []  # নতুন ছকে পুরোনো চ্যাট মুছে দাও
+        st.session_state.messages = []
         st.success("জন্মছক তৈরি হয়েছে!")
     except Exception as e:
         st.error(f"গণনায় সমস্যা: {e}")
         st.stop()
 
-# --- ফলাফল ---
 if "chart" in st.session_state:
     chart = st.session_state.chart
 
@@ -182,7 +178,6 @@ if "chart" in st.session_state:
     st.divider()
     st.subheader("💬 প্রশ্ন করুন")
 
-    # মেসেজ হিস্ট্রি দেখানো
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
@@ -190,22 +185,19 @@ if "chart" in st.session_state:
         with st.chat_message(m["role"]):
             st.markdown(m["content"])
 
-    # নতুন প্রশ্ন
     if question := st.chat_input("যেকোনো কিছু জিজ্ঞেস করুন..."):
-        # ইউজার মেসেজ যোগ + দেখানো
         st.session_state.messages.append({"role": "user", "content": question})
         with st.chat_message("user"):
             st.markdown(question)
 
-        # AI উত্তর
         with st.chat_message("assistant"):
             with st.spinner("ভাবছি..."):
                 answer = ask_ai(question, chart, st.session_state.birth_info)
             st.markdown(answer)
 
         st.session_state.messages.append({"role": "assistant", "content": answer})
-        # পেজ রিফ্রেশ করে হিস্ট্রি আপডেট রাখতে
         st.rerun()
 
 else:
     st.info("উপরে জন্মতথ্য দিয়ে **দেখুন** বোতাম চাপুন।")
+এই পুরো কোডটা কপি করে খালি ফাইলে পেস্ট করে দিন, তারপর Commit করুন।
