@@ -1,12 +1,6 @@
 # ============================================================
-# life_financial_module.py  (সংস্করণ ২ — লিঙ্গভিত্তিক জীবনচক্র)
+# life_financial_module.py  (সংস্করণ ৩ — লিঙ্গভিত্তিক জীবনচক্র ও মাদারহুড মডিউলসহ)
 # কসমিক ক্যাম্পাস — বয়স ১-৬০ জীবনচক্র ও পারিবারিক অর্থনীতি মডেল
-#
-# নতুন: মেয়ে ও ছেলের জন্য আলাদা জীবনচক্র।
-#   - "গ্রহ" ও বয়সের পর্যায় দুজনের জন্য একই কাঠামোতে থাকে
-#   - কিন্তু জীবনযাত্রা, শরীরের বিকাশ ও পারিবারিক অর্থনীতির বর্ণনা
-#     লিঙ্গ অনুযায়ী আলাদা
-#   - "শরীর গঠন" অংশটি জৈবিক বাস্তবতা থেকে লেখা (জ্যোতিষীয় দাবি নয়)
 # ============================================================
 
 from datetime import date
@@ -37,7 +31,6 @@ PHASE_SKELETON = [
 
 # ------------------------------------------------------------
 # লিঙ্গভিত্তিক বিষয়বস্তু
-# প্রতিটি পর্যায়ে: life (জীবনযাত্রা), body (শরীর গঠন), money (পারিবারিক অর্থনীতি)
 # ------------------------------------------------------------
 PHASE_CONTENT = {
     GENDER_MALE: [
@@ -213,7 +206,7 @@ ADOLESCENCE_BEHAVIOR = {
                          "নিয়ে ভাবনা বেশি থাকতে পারে।"),
             "watch": ("শরীর নিয়ে হীনমন্যতা, বন্ধুদের মধ্যে বাদ পড়ার ভয় ও "
                       "ঋতুচক্র নিয়ে তথ্যের অভাব খেয়াল রাখুন। হঠাৎ চুপ হয়ে যাওয়া বা "
-                      "পড়াশোনায় আগ্রহ কমা লক্ষণ হতে পারে।"),
+                      "পড়াশোনায় আগ্রহ কما লক্ষণ হতে পারে।"),
             "verify": "ক্লায়েন্টকে জিজ্ঞেস করুন: বন্ধুবান্ধব ও শরীরের পরিবর্তন নিয়ে সে কতটা স্বচ্ছন্দ?",
         },
         "mid": {
@@ -278,7 +271,7 @@ ADOLESCENCE_BEHAVIOR = {
                         "(আয় করা, দায়িত্ব নেওয়া) এই সময়ে বাড়ে।"),
             "form": ("শারীরিক বিকাশ প্রায় পূর্ণ; নিজের সক্ষমতা ও পরিচয় নিয়ে "
                      "ধারণা স্থির হতে শুরু করে।"),
-            "thinking": ("ক্যারিয়ার ও উপার্জন নিয়ে চাপ অনুভব করে; "
+            "thinking": ("কর্মজীবন ও উপার্জন নিয়ে চাপ অনুভব করে; "
                          "সফল হওয়ার সামাজিক প্রত্যাশা অনেকের জন্য বোঝা হয়ে দাঁড়ায়।"),
             "watch": ("বেকারত্ব বা অসফলতার চাপে হতাশা, মানসিক কষ্ট গোপন রাখা "
                       "এবং নেশা/ঋণের ঝুঁকি খেয়াল রাখুন। ছেলেরা প্রায়ই সাহায্য "
@@ -297,8 +290,7 @@ ADOLESCENCE_DISCLAIMER = (
 
 
 def get_adolescence_profile(age: int, gender):
-    """১২–২০ বছরের জন্য লিঙ্গভিত্তিক চালচলন/গঠন/চিন্তাধারা ফেরত দেয়।
-    এই সীমার বাইরে হলে None দেয়।"""
+    """১২–২০ বছরের জন্য লিঙ্গভিত্তিক চালচলন/গঠন/চিন্তাধারা ফেরত দেয়।"""
     gender = normalize_gender(gender)
     for sub in ADOLESCENCE_SUBPHASES:
         lo, hi = sub["range"]
@@ -310,17 +302,30 @@ def get_adolescence_profile(age: int, gender):
     return None
 
 
-# পুরনো কোডের সাথে সামঞ্জস্য (ছেলেদের জন্য)
-LIFE_PHASES = [
-    {
-        "range": sk["range"],
-        "planet": sk["planet"],
-        "planet_en": sk["planet_en"],
-        "life_progression": c["life"],
-        "father_income_focus": c["money"],
-    }
-    for sk, c in zip(PHASE_SKELETON, PHASE_CONTENT[GENDER_MALE])
-]
+# ------------------------------------------------------------
+# নতুন সংযোজন: গর্ভধারণ ও সন্তান জন্মের বিশেষ মডিউল (Motherhood Module)
+# ------------------------------------------------------------
+def get_motherhood_module(age: int, gender):
+    """নারী ইউজারের বয়স যদি প্রজননক্ষম সীমার (১৮-৪০ বছর) মধ্যে হয়, 
+    তবে গর্ভধারণ ও সন্তান সম্ভাবনার বিশেষ জ্যোতিষশাস্ত্রীয় ও স্বাস্থ্যগত পূর্বাভাস দেয়।"""
+    gender = normalize_gender(gender)
+    if gender == GENDER_FEMALE and 18 <= age <= 40:
+        if 22 <= age <= 32:
+            return {
+                "status": "অনুকূল পর্যায়",
+                "description": ("জ্যোতিষশাস্ত্র ও শারীরিক দিক থেকে এই সময়টি মাতৃত্ব ও গর্ভধারণের জন্য "
+                                "সবচেয়ে অনুকূল। ৫ম ভাব ও বৃহস্পতির অনুকূল প্রভাবে পারিবারিক সুখ "
+                                "এবং নতুন অতিথি আসার জোরালো সম্ভাবনা থাকে। নিয়মিত প্রসবপূর্ব পরিচর্যা ও "
+                                "ফলিক অ্যাসিড গ্রহণ উপকারী।")
+            }
+        else:
+            return {
+                "status": "সতর্কতামূলক বা পরিকল্পনাধীন পর্যায়",
+                "description": ("এই বয়সে গর্ভধারণের ক্ষেত্রে চিকিৎসাগত ও জ্যোতিষশাস্ত্রীয় পরামর্শ (বিশেষ করে "
+                                "৫ম ও ৯ম ভাবের দশা বিচার করে) নেওয়া উচিত। স্বাস্থ্যগত সতর্কতা এবং বাড়তি "
+                                "যত্ন বজায় রাখলে সুফল পাওয়া সম্ভব।")
+            }
+    return None
 
 
 # ------------------------------------------------------------
@@ -352,34 +357,4 @@ def get_phase_for_age(age: int, gender=GENDER_MALE):
     gender = normalize_gender(gender)
     i = _phase_index_for_age(age)
     sk = PHASE_SKELETON[i]
-    c = PHASE_CONTENT[gender][i]
-    return {
-        "range": sk["range"],
-        "planet": sk["planet"],
-        "planet_en": sk["planet_en"],
-        "life_progression": c["life"],
-        "body": c["body"],
-        "money": c["money"],
-    }
-
-
-def get_full_profile(age: int, gender):
-    """বয়স ও লিঙ্গ অনুযায়ী সম্পূর্ণ প্রোফাইল ফেরত দেয় (পর্যায় + কৈশোর যদি প্রযোজ্য হয়)।"""
-    phase = get_phase_for_age(age, gender)
-    adolescence = get_adolescence_profile(age, gender)
-
-    return {
-        "age": age,
-        "gender": gender,
-        "gender_label": GENDER_LABEL_BN[normalize_gender(gender)],
-        "phase": phase,
-        "adolescence": adolescence,
-        "adolescence_disclaimer": ADOLESCENCE_DISCLAIMER,
-    }
-
-def generate_life_financial_steps(name, dob, gender, chart=None):
-    from datetime import date
-    today = date.today()
-    age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
-    return get_full_profile(age, gender)
-    
+    c = PHASE_CONTE
